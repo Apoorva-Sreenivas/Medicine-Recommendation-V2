@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Help - Healthcare Recommendation System{% endblock %}
+
+{% block content %}
+    <h2>Help & Support</h2>
+    <p>If you have any questions or issues using the Healthcare Recommendation System, feel free to reach out to our support team:</p>
+    <ul>
+        <li>Email: support@example.com</li>
+        <li>Phone: 123-456-7890</li>
+    </ul>
+
+    <p>Frequently Asked Questions:</p>
+    <ul>
+        <li><strong>How do I register as a patient?</strong> Click on the 'Patient Login' link in the navbar, then click 'Register' to create a new account.</li>
+        <li><strong>How do I view my medical information?</strong> Once logged in as a patient, you will have access to your medical details.</li>
+        <li><strong>How can an admin access patient data?</strong> Admins can log in through the 'Admin Login' link and search for patients by ID.</li>
+    </ul>
+
+    <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">Back to Home</a>
+{% endblock %}

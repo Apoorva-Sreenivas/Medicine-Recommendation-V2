@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Login - Healthcare Recommendation System{% endblock %}
+
+{% block content %}
+    <h2>Patient Login</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="patient_id" class="form-label">Patient ID</label>
+            <input type="text" class="form-control" name="patient_id" required>
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" name="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <h2 class="mb-4 text-success">Registration Successful!</h2>
+    <p class="lead">Your Patient ID is:</p>
+    <div class="alert alert-info display-6 p-3">
+        {{ patient_id }}
+    </div>
+    <p class="mt-4">Please save this ID. You'll need it to log in.</p>
+    <a href="{{ url_for('login') }}" class="btn btn-primary mt-3">Go to Login</a>
+</div>
+{% endblock %}
