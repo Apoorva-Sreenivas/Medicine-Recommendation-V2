@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}LLM-Based Symptom Checker{% endblock %}
+
+{% block content %}
+<div class="container mt-4" id="predictContainer" data-patient-id="{{ patient[0] }}">
+    <h2 class="mb-3">AI Health Prediction (LLaMA 3.2)</h2>
+
+    <div class="mb-3">
+        <label for="symptomInput" class="form-label">Enter a symptom:</label>
+        <input type="text" id="symptomInput" class="form-control" placeholder="e.g., fever, headache">
+        <button onclick="addSymptom()" class="btn btn-secondary mt-2">Add Symptom</button>
+    </div>
+
+    <div class="mb-3">
+        <h5>Selected Symptoms:</h5>
+        <ul id="symptomList" class="list-group"></ul>
+    </div>
+
+    <button onclick="predict()" class="btn btn-primary">Predict</button>
+
+    <!-- Floating Button -->
+    <button class="chat-toggle-button" onclick="toggleChat()">💬</button>
+
+    <!-- Chatbot Window -->
+    <div class="chatbot-container" id="chatbotWindow">
+        <div id="chatbox" class="chatbox"></div>
+
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Type your message..." onkeydown="handleKeyPress(event)" />
+            <button onclick="sendMessage()" class="send-button">Send</button>
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex justify-content-between">
+        <a href="{{ url_for('patient_dashboard', patient_id=patient[0]) }}" class="btn btn-secondary mt-2">
+            Back to Dashboard
+        </a>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary mt-2">
+            Home
+        </a>
+    </div>
+
+    <div id="loading" style="display:none;" class="mt-3">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <span> Predicting… Please wait.</span>
+    </div>
+
+    <div class="mt-4" id="result" style="white-space: pre-wrap;"></div>
+</div>
+
+<script>
+    let symptoms = [];
+
+    function addSymptom() {
+        const input = document.getElementById("symptomInput");
+        const value = input.value.trim();
+        if (value && !symptoms.includes(value)) {
+            symptoms.push(value);
+            updateSymptomList();
+        }
+        input.value = "";
+    }
+
+    function updateSymptomList() {
+        const list = document.getElementById("symptomList");
+        list.innerHTML = "";
+        symptoms.forEach((sym, idx) => {
+            const li = document.createElement("li");
+            li.className = "list-group-item d-flex justify-content-between align-items-center";
+            li.innerHTML = `${sym} <button class="btn btn-sm btn-danger" onclick="removeSymptom(${idx})">Remove</button>`;
+            list.appendChild(li);
+        });
+    }
+
+    function removeSymptom(index) {
+        symptoms.splice(index, 1);
+        updateSymptomList();
+    }
+
+    // Add this to handle 'Enter' key in input field
+    document.getElementById("symptomInput").addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault(); // Prevent form submission if inside form
+            addSymptom();
+        }
+    });
+
+    async function predict() {
+        if (symptoms.length === 0) {
+            alert("Please add at least one symptom.");
+            return;
+        }
+
+        document.getElementById("loading").style.display = "block";
+        const response = await fetch("", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ symptoms: symptoms })
+        });
+        const data = await response.json();
+        document.getElementById("loading").style.display = "none";
+
+        // Format nicely
+        document.getElementById("result").innerHTML = `
+            <h4>Diagnosis Result:</h4>
+            <p><strong>Disease:</strong> ${data.disease}</p>
+            <p><strong>Description:</strong> ${data.description}</p>
+            <p><strong>Precautions:</strong><br>${formatBullets(data.precautions)}</p>
+            <p><strong>Medications:</strong><br>${formatBullets(data.medications)}</p>
+            <p><strong>Diet:</strong><br>${formatBullets(data.diet)}</p>
+        `;
+    }
+
+    function formatBullets(text) {
+        return text
+            .split(/\n|•|-|\*/g)
+            .filter(line => line.trim())
+            .map(line => `<li>${line.trim()}</li>`)
+            .join("");
+    }
+</script>
+<script>
+    async function sendMessage() {
+        const input = document.getElementById("userInput");
+        const message = input.value.trim();
+        if (message === "") return;
+
+        const chatbox = document.getElementById("chatbox");
+
+        // Show user message
+        const userMsg = document.createElement("div");
+        userMsg.className = "message";
+        userMsg.textContent = message;
+        chatbox.appendChild(userMsg);
+        input.value = "";
+        chatbox.scrollTop = chatbox.scrollHeight;
+
+        // Fetch patient_id from the data attribute
+        const patientId = document.getElementById("predictContainer").dataset.patientId;
+
+        // Check for exit keywords
+        const exitKeywords = ["bye", "exit", "quit", "close"];
+        if (exitKeywords.includes(message.toLowerCase())) {
+            const botMsg = document.createElement("div");
+            botMsg.className = "message";
+            botMsg.style.backgroundColor = "#cce6ff";
+            botMsg.style.alignSelf = "flex-start";
+            botMsg.textContent = "Goodbye! Closing chat.";
+            chatbox.appendChild(botMsg);
+            chatbox.scrollTop = chatbox.scrollHeight;
+
+            setTimeout(() => {
+                document.getElementById("chatbotWindow").style.display = "none";
+            }, 1500);
+            return;
+        }
+
+        try {
+            const response = await fetch("/chatbot", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    message: message,
+                    patient_id: patientId  // Pass the patient_id here
+                })
+            });
+            const data = await response.json();
+
+            // Show bot reply
+            const botMsg = document.createElement("div");
+            botMsg.className = "message";
+            botMsg.style.backgroundColor = "#cce6ff";
+            botMsg.style.alignSelf = "flex-start";
+            botMsg.textContent = data.reply || "Sorry, I couldn't understand.";
+            chatbox.appendChild(botMsg);
+            chatbox.scrollTop = chatbox.scrollHeight;
+        } catch (err) {
+            console.error("Chatbot error:", err);
+        }
+    }
+
+
+    function handleKeyPress(event) {
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+    }
+
+    function toggleChat() {
+        const chatbot = document.getElementById("chatbotWindow");
+        chatbot.style.display = chatbot.style.display === "flex" ? "none" : "flex";
+    }
+</script>
+
+
+
+{% endblock %}

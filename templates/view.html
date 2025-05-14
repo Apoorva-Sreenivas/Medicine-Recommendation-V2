@@ -4,6 +4,7 @@
 <div class="container mt-4">
     <h2 class="text-center mb-4">Patient Records</h2>
 
+    <!-- Search Form -->
     <form method="POST" class="row g-3 mb-4">
         <div class="col-md-2">
             <input type="text" name="patient_id" class="form-control" placeholder="Patient ID">
@@ -27,6 +28,7 @@
         </div>
     </form>
 
+    <!-- Patient Table -->
     {% if patients %}
     <div class="table-responsive">
         <table class="table table-bordered table-striped">
@@ -56,6 +58,37 @@
     </div>
     {% else %}
     <p class="text-muted text-center">No patient records found.</p>
+    {% endif %}
+
+    <!-- AI Predictions Section -->
+    {% if predictions %}
+    <div class="mt-5">
+        <h4 class="text-center mb-3">Recent AI-Based Diagnoses</h4>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Patient ID</th>
+                        <th>Name</th>
+                        <th>Timestamp</th>
+                        <th>Predicted Disease</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pid, name, timestamp, diagnosis in predictions %}
+                    <tr>
+                        <td>{{ pid }}</td>
+                        <td>{{ name }}</td>
+                        <td>{{ timestamp }}</td>
+                        <td style="white-space: pre-wrap;">{{ diagnosis }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <p class="text-muted text-center mt-5">No AI predictions available yet.</p>
     {% endif %}
 </div>
 {% endblock %}

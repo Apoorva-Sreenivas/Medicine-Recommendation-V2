@@ -3,12 +3,35 @@
 {% block title %}Patient Dashboard - Healthcare Recommendation System{% endblock %}
 
 {% block content %}
-    <h2>Welcome, {{ patient[1] }}!</h2>
-    <p><strong>Age:</strong> {{ patient[2] }}</p>
-    <p><strong>Sex:</strong> {{ patient[3] }}</p>
-    <p><strong>Height:</strong> {{ patient[4] }} cm</p>
-    <p><strong>Weight:</strong> {{ patient[5] }} kg</p>
-    <p><strong>Medical History:</strong> {{ patient[6] }}</p>
+<h2>Welcome, {{ patient[1] }}!</h2>
+<p><strong>Age:</strong> {{ patient[2] }}</p>
+<p><strong>Sex:</strong> {{ patient[3] }}</p>
+<p><strong>Height:</strong> {{ patient[4] }} cm</p>
+<p><strong>Weight:</strong> {{ patient[5] }} kg</p>
+<p><strong>Medical History:</strong> {{ patient[6] }}</p>
 
-    <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">Back to Home</a>
+<a href="{{ url_for('llm_predict', patient_id=patient[0]) }}" class="btn btn-success mt-3">Use AI Diagnosis</a>
+<a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">Back to Home</a>
+
+{% if sessions %}
+<h4 class="mt-5">Previous AI Predictions</h4>
+<table class="table table-bordered mt-2">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Predicted Disease</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for date, disease in sessions %}
+        <tr>
+            <td>{{ date }}</td>
+            <td>{{ disease }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="mt-4">No AI predictions found yet.</p>
+{% endif %}
 {% endblock %}

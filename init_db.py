@@ -27,13 +27,15 @@ def create_database():
     )
     ''')
 
-    # Table 3: Session Records and Predictions
+
+        # Table 4: Interaction memory (stores symptoms used for LLM context)
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS recommendation_sessions (
-        session_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    CREATE TABLE IF NOT EXISTS interactions (
+        interaction_id INTEGER PRIMARY KEY AUTOINCREMENT,
         patient_id INTEGER NOT NULL,
-        session_date TEXT NOT NULL,  -- Format: YYYY-MM-DD
-        predicted_disease TEXT NOT NULL,
+        symptoms TEXT NOT NULL,
+        timestamp TEXT NOT NULL,
+        llm_output TEXT,  
         FOREIGN KEY (patient_id) REFERENCES login(patient_id) ON DELETE CASCADE
     )
     ''')
@@ -74,22 +76,12 @@ def clear_db():
 
     # Clear all data from tables
     # cur.execute("DELETE FROM login")
-    cur.execute("DELETE FROM patient_details")
-    # cur.execute("DELETE FROM admin")  # If you have an admin table
+    # cur.execute("DELETE FROM patient_details")
+    # # cur.execute("DELETE FROM admin")  # If you have an admin table
 
+    # conn.commit()
+    # conn.close()
+    cur.execute("DROP TABLE IF EXISTS recommendation_sessions")
     conn.commit()
     conn.close()
-
     print("Database cleared.")
-
-
-
-if __name__ == "__main__":
-    # create_admin_table()
-    # clear_db()
-
-
-# if __name__ == "__main__":
-#     create_database()
-
-
